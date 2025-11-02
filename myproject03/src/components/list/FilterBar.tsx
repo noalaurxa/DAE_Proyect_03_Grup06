@@ -1,40 +1,47 @@
-// src/components/list/FilterBar.jsx
-import { useState } from 'react';
-import { Row, Col, Form, Button, InputGroup } from 'react-bootstrap';
+import { useState, type ChangeEvent, type FormEvent } from 'react';
+import { Button, Col, Form, Row } from 'react-bootstrap';
 
-// Recibimos las funciones y los valores actuales desde el hook
-const FilterBar = ({ onFilter, onClear, initialFilters }) => {
-  // Estado local para manejar los campos del formulario
-  const [filters, setFilters] = useState({
-    name: initialFilters.get('name') || '',
-    status: initialFilters.get('status') || '',
+interface FiltersState {
+  name: string;
+  status: string;
+  [key: string]: string;
+}
+
+interface FilterBarProps {
+  onFilter: (filters: FiltersState) => void;
+  onClear: () => void;
+  initialFilters: URLSearchParams;
+}
+
+const FilterBar = ({ onFilter, onClear, initialFilters }: FilterBarProps) => {
+  const [filters, setFilters] = useState<FiltersState>({
+    name: initialFilters.get('name') ?? '',
+    status: initialFilters.get('status') ?? '',
   });
 
-  // Actualiza el estado local cuando se escribe en los inputs
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFilters(prev => ({ ...prev, [name]: value }));
+  const handleChange = (
+    event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = event.target;
+    setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Llama a la función del hook cuando se presiona "Filtrar"
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     onFilter(filters);
   };
 
-  // Llama a la función del hook cuando se presiona "Limpiar"
   const handleClear = () => {
-    setFilters({ name: '', status: '' }); // Limpia el formulario local
-    onClear(); // Llama a la función del hook
+    setFilters({ name: '', status: '' });
+    onClear();
   };
 
   return (
     <Form onSubmit={handleSubmit} className="mb-4 p-4 bg-light rounded-3 shadow-sm">
       <Row className="align-items-end g-3">
-        {/* Filtro por Nombre */}
         <Col md={4}>
           <Form.Group controlId="filterName">
-            <Form.Label>Filtrar por Nombre</Form.Label>
+            <Form.Label>Filtrar por nombre</Form.Label>
             <Form.Control
               type="text"
               name="name"
@@ -45,15 +52,10 @@ const FilterBar = ({ onFilter, onClear, initialFilters }) => {
           </Form.Group>
         </Col>
 
-        {/* Filtro por Estado */}
         <Col md={3}>
           <Form.Group controlId="filterStatus">
             <Form.Label>Estado</Form.Label>
-            <Form.Select
-              name="status"
-              value={filters.status}
-              onChange={handleChange}
-            >
+            <Form.Select name="status" value={filters.status} onChange={handleChange}>
               <option value="">Cualquiera</option>
               <option value="alive">Vivo</option>
               <option value="dead">Muerto</option>
@@ -62,13 +64,12 @@ const FilterBar = ({ onFilter, onClear, initialFilters }) => {
           </Form.Group>
         </Col>
 
-        {/* Botones */}
         <Col md={5} className="d-flex gap-2">
           <Button type="submit" variant="primary">
             Filtrar
           </Button>
           <Button type="button" variant="outline-secondary" onClick={handleClear}>
-            Limpiar Filtros
+            Limpiar filtros
           </Button>
         </Col>
       </Row>

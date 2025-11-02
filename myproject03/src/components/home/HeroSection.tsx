@@ -1,4 +1,4 @@
-import { Container, Row, Col, Button } from 'react-bootstrap';
+import { Button, Col, Container, Row } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
 const HeroSection = () => {
@@ -8,19 +8,20 @@ const HeroSection = () => {
         <Col md={8}>
           <h1 className="display-4 fw-bold">Bienvenido al Universo React</h1>
           <p className="fs-4">
-            Explora una increíble colección de entidades de tu API favorita.
-            Navega, filtra y descubre todo lo que este universo tiene para ofrecer.
+            Explora una increible coleccion de entidades de tu API favorita. Navega, filtra y
+            descubre todo lo que este universo tiene para ofrecer.
           </p>
-          <Button as={Link} to="/lista" variant="primary" size="lg">
-            ¡Comenzar a Explorar!
-          </Button>
+          <Link to="/lista">
+            <Button variant="primary" size="lg">
+              Comenzar a explorar
+            </Button>
+          </Link>
         </Col>
         <Col md={4} className="text-center d-none d-md-block">
-          {/* Puedes poner un  o logo aquí */}
-          <img 
-            src="https://rickandmortyapi.com/api/character/avatar/1.jpeg" 
-            alt="Rick Sanchez" 
-            className="img-fluid rounded-circle" 
+          <img
+            src="https://rickandmortyapi.com/api/character/avatar/1.jpeg"
+            alt="Rick Sanchez"
+            className="img-fluid rounded-circle"
           />
         </Col>
       </Row>

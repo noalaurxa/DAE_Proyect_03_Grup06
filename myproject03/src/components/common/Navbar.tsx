@@ -1,4 +1,4 @@
-import { Navbar, Nav, Container } from 'react-bootstrap';
+import { Container, Nav, Navbar } from 'react-bootstrap';
 import { NavLink } from 'react-router-dom';
 
 const AppNavbar = () => {
@@ -6,12 +6,11 @@ const AppNavbar = () => {
     <Navbar bg="dark" variant="dark" expand="lg" sticky="top">
       <Container>
         <Navbar.Brand as={NavLink} to="/">
-          🚀 Rick & Morty App
+          Rick & Morty App
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
-        <Navbar.Collapse id="basic-navbar-nav">
+        <Navbar.Collapse id="basic-navbar-nav" role="navigation">
           <Nav className="ms-auto">
-            {/* NavLink se usa para que "active" la clase CSS */}
             <Nav.Link as={NavLink} to="/" end>
               Inicio
             </Nav.Link>

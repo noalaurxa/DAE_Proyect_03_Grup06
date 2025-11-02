@@ -1,4 +1,3 @@
-import React from 'react';
 import { Container } from 'react-bootstrap'; 
 import HeroSection from '../components/home/HeroSection';
 import PopularSection from '../components/home/PopularSection';
