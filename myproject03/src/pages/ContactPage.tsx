@@ -4,9 +4,9 @@ import ContactForm from '../components/contact/ContactForm';
 const ContactPage = () => {
   return (
 
-    <Container className="my-5">
+    <Container  className="my-5 p-4 d-flex justify-content-center">
       <Row className="justify-content-md-center">
-        <Col md={10} lg={8}>
+        <Col xs={12} md={10} lg={10}>
           <h1 className="text-center mb-4">Ponte en Contacto</h1>
           <p className="text-center text-muted mb-4">
             ¿Tienes alguna pregunta o sugerencia? Rellena el formulario y
