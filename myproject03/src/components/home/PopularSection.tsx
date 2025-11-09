@@ -30,18 +30,21 @@ const PopularSection = () => {
   }
 
   return (
-    <section>
-      <h2>Personajes Populares</h2>
-      <Row>
+    <section className="text-center py-8 bg-white">
+      <h2 className="fw-bold mb-4">Personajes de Rick and Morty</h2>
+      <Row className="justify-content-center g-4 mb-4">
         {characters.map((char) => (
           <EntityCard key={char.id} character={char} />
         ))}
       </Row>
       <Link to="/lista">
-        <Button>Ver todos los personajes</Button>
+        <Button variant="primary" size="lg">
+          Ver todos los personajes
+        </Button>
       </Link>
     </section>
   );
 };
+
 
 export default PopularSection;

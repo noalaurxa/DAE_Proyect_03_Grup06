@@ -1,7 +1,7 @@
 import type { AxiosError, AxiosResponse } from 'axios';
 import api from './api';
-
-const POPULAR_IDS = [1, 2, 3, 4, 5, 19];
+//Candidad de personajes que se va a mostrar en la seccion de populares
+const POPULAR_IDS = [1, 2, 3, 4, 5, 6, 7, 8];
 
 export interface Character {
   id: number;

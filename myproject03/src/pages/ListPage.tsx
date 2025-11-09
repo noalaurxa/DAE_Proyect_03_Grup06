@@ -19,32 +19,52 @@ const ListPage = () => {
   } = useEntities();
 
   return (
-    <Container fluid className="my-5 p-4">
-      <h1 className="mb-4">Listado de personajes</h1>
+    <Container fluid className="py-5 bg-light min-vh-100">
+      <Container className="p-4 rounded-4 bg-white shadow-sm">
+        <h1 className="text-center fw-bold mb-4 text-primary">
+          Listado de Personajes
+        </h1>
 
-      <FilterBar onFilter={handleFilterChange} onClear={handleClearFilters} initialFilters={searchParams} />
+        {/* Barra de filtros */}
+        <div className="mb-4">
+          <FilterBar
+            onFilter={handleFilterChange}
+            onClear={handleClearFilters}
+            initialFilters={searchParams}
+          />
+        </div>
 
-      {loading && <LoadingSpinner />}
+        {/* Carga y errores */}
+        {loading && <LoadingSpinner />}
+        {error && <ErrorAlert message={error} />}
 
-      {error && <ErrorAlert message={error} />}
+        {/* Contenido principal */}
+        {!loading && !error && (
+          <>
+            {characters.length === 0 ? (
+              <p className="text-center fs-5 text-muted my-5">
+                No se encontraron personajes con esos filtros.
+              </p>
+            ) : (
+              <>
+                <Row className="g-4 justify-content-center">
+                  {characters.map((character) => (
+                    <EntityCard key={character.id} character={character} />
+                  ))}
+                </Row>
 
-      {!loading && !error && (
-        <>
-          {characters.length === 0 ? (
-            <p className="text-center fs-5">No se encontraron personajes con esos filtros.</p>
-          ) : (
-            <>
-              <Row>
-                {characters.map((character) => (
-                  <EntityCard key={character.id} character={character} />
-                ))}
-              </Row>
-
-              <Pagination paginationInfo={paginationInfo} onPageChange={handlePageChange} />
-            </>
-          )}
-        </>
-      )}
+                {/* Paginación centrada */}
+                <div className="d-flex justify-content-center mt-5">
+                  <Pagination
+                    paginationInfo={paginationInfo}
+                    onPageChange={handlePageChange}
+                  />
+                </div>
+              </>
+            )}
+          </>
+        )}
+      </Container>
     </Container>
   );
 };
