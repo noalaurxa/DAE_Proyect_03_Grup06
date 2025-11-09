@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Badge,
   Button,
@@ -8,39 +8,27 @@ import {
   Container,
   Form,
   Row,
-  Table,
+  Pagination,
 } from 'react-bootstrap';
 import ErrorAlert from '../components/common/ErrorAlert';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import RelatedCharactersDrawer from '../components/common/RelatedCharactersDrawer';
 import useLocations from '../hooks/useLocations';
 
-type ViewMode = 'cards' | 'table';
-
 const LocationsPage = () => {
   const { locations, loading, error } = useLocations();
   const [searchTerm, setSearchTerm] = useState('');
-  const [dimensionFilter, setDimensionFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
-  const [viewMode, setViewMode] = useState<ViewMode>('cards');
+  const [sortOption, setSortOption] = useState('az');
   const [drawerData, setDrawerData] = useState<{ title: string; urls: string[] } | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const locationsPerPage = 9;
 
-  const dimensionOptions = useMemo(() => {
-    const dimensions = new Set<string>();
-    locations.forEach((location) => {
-      if (location.dimension) {
-        dimensions.add(location.dimension);
-      }
-    });
-    return Array.from(dimensions).sort();
-  }, [locations]);
-
+  // --- Filtros ---
   const typeOptions = useMemo(() => {
     const types = new Set<string>();
-    locations.forEach((location) => {
-      if (location.type) {
-        types.add(location.type);
-      }
+    locations.forEach((loc) => {
+      if (loc.type) types.add(loc.type);
     });
     return Array.from(types).sort();
   }, [locations]);
@@ -48,243 +36,218 @@ const LocationsPage = () => {
   const filteredLocations = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
 
-    return locations.filter((location) => {
+    const filtered = locations.filter((loc) => {
       const matchesSearch =
-        location.name.toLowerCase().includes(normalizedSearch) ||
-        location.type.toLowerCase().includes(normalizedSearch) ||
-        location.dimension.toLowerCase().includes(normalizedSearch);
+        loc.name.toLowerCase().includes(normalizedSearch) ||
+        loc.dimension.toLowerCase().includes(normalizedSearch);
 
-      const matchesDimension =
-        dimensionFilter === 'all' || location.dimension === dimensionFilter;
+      const matchesType = typeFilter === 'all' || loc.type === typeFilter;
 
-      const matchesType = typeFilter === 'all' || location.type === typeFilter;
-
-      return matchesSearch && matchesDimension && matchesType;
+      return matchesSearch && matchesType;
     });
-  }, [locations, searchTerm, dimensionFilter, typeFilter]);
 
+    return filtered.sort((a, b) => {
+      if (sortOption === 'az') return a.name.localeCompare(b.name);
+      if (sortOption === 'za') return b.name.localeCompare(a.name);
+      return 0;
+    });
+  }, [locations, searchTerm, typeFilter, sortOption]);
+
+  // --- Estadísticas ---
   const stats = useMemo(() => {
-    const totalResidents = locations.reduce((sum, location) => sum + location.residents.length, 0);
+    const totalResidents = locations.reduce((acc, loc) => acc + loc.residents.length, 0);
     return {
       totalLocations: locations.length,
-      uniqueDimensions: dimensionOptions.length,
-      totalResidents,
+      totalTypes: typeOptions.length,
+      avgResidents: locations.length ? Math.round(totalResidents / locations.length) : 0,
     };
-  }, [locations, dimensionOptions]);
+  }, [locations, typeOptions]);
+
+  // --- Paginación ---
+  const indexOfLast = currentPage * locationsPerPage;
+  const indexOfFirst = indexOfLast - locationsPerPage;
+  const currentLocations = filteredLocations.slice(indexOfFirst, indexOfLast);
+  const totalPages = Math.ceil(filteredLocations.length / locationsPerPage);
 
   const handleResetFilters = () => {
     setSearchTerm('');
-    setDimensionFilter('all');
     setTypeFilter('all');
+    setSortOption('az');
+    setCurrentPage(1);
   };
 
-  const renderCards = () => (
-    <Row className="g-4">
-      {filteredLocations.map((location) => (
-        <Col key={location.id} xs={12} md={6} xl={4}>
-          <Card className="h-100 shadow-sm">
-            <Card.Body>
-              <div className="d-flex justify-content-between align-items-start mb-2">
-                <div>
-                  <Card.Title className="mb-1">{location.name}</Card.Title>
-                  <Card.Subtitle className="text-muted">{location.type || 'Sin tipo'}</Card.Subtitle>
-                </div>
-                <Badge bg="secondary" title="Dimensión">
-                  {location.dimension || 'Desconocida'}
-                </Badge>
-              </div>
-              <p className="text-muted mb-3">
-                {location.residents.length}{' '}
-                {location.residents.length === 1 ? 'habitante' : 'habitantes'}
-              </p>
-              <div className="d-flex justify-content-between align-items-center">
-                <small className="text-muted">Creado el {location.created.split('T')[0]}</small>
-                <Button
-                  size="sm"
-                  variant="outline-primary"
-                  onClick={() =>
-                    setDrawerData({
-                      title: `Habitantes de ${location.name}`,
-                      urls: location.residents,
-                    })
-                  }
-                >
-                  Ver habitantes
-                </Button>
-              </div>
-            </Card.Body>
-          </Card>
-        </Col>
-      ))}
-    </Row>
-  );
-
-  const renderTable = () => (
-    <div className="table-responsive">
-      <Table hover className="align-middle">
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Tipo</th>
-            <th>Dimensión</th>
-            <th>Habitantes</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredLocations.map((location) => (
-            <tr key={location.id}>
-              <td>{location.name}</td>
-              <td>
-                <Badge bg="light" text="dark">
-                  {location.type || 'Sin tipo'}
-                </Badge>
-              </td>
-              <td>{location.dimension || 'Desconocida'}</td>
-              <td>{location.residents.length}</td>
-              <td className="text-end">
-                <Button
-                  size="sm"
-                  variant="outline-primary"
-                  onClick={() =>
-                    setDrawerData({
-                      title: `Habitantes de ${location.name}`,
-                      urls: location.residents,
-                    })
-                  }
-                >
-                  Explorar
-                </Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
-    </div>
-  );
-
   return (
-    <Container fluid className="my-5 p-4">
-      <header className="mb-5 text-center text-md-start">
-        <h1 className="mb-2">Ubicaciones</h1>
-        <p className="text-muted mb-0">
-          Navega por las ubicaciones más emblemáticas, filtra por dimensión o tipo y descubre cuántos
-          habitantes viven en cada una.
-        </p>
-      </header>
+    <Container fluid className="py-5 bg-light min-vh-100">
+      <Container className="p-4 bg-white rounded-4 shadow-sm">
+        <header className="mb-5 text-center">
+          <h1 className="fw-bold text-primary mb-3">Ubicaciones</h1>
+          <p className="text-muted fs-5">
+            Explora todos los lugares del universo de Rick and Morty. Filtra por tipo o dimensión y
+            descubre quién vive allí.
+          </p>
+        </header>
 
-      <Row className="g-3 mb-4">
-        <Col md={4}>
-          <Card className="h-100 shadow-sm text-center">
-            <Card.Body>
-              <p className="text-muted text-uppercase small mb-1">Ubicaciones totales</p>
-              <h2 className="mb-0">{stats.totalLocations}</h2>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={4}>
-          <Card className="h-100 shadow-sm text-center">
-            <Card.Body>
-              <p className="text-muted text-uppercase small mb-1">Dimensiones únicas</p>
-              <h2 className="mb-0">{stats.uniqueDimensions}</h2>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={4}>
-          <Card className="h-100 shadow-sm text-center">
-            <Card.Body>
-              <p className="text-muted text-uppercase small mb-1">Habitantes censados</p>
-              <h2 className="mb-0">{stats.totalResidents}</h2>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+        {/* --- Estadísticas --- */}
+        <Row className="g-3 mb-4 text-center">
+          <Col md={4}>
+            <Card className="h-100 shadow-sm border-0">
+              <Card.Body>
+                <p className="text-muted text-uppercase small mb-1">Ubicaciones</p>
+                <h2 className="fw-bold mb-0">{stats.totalLocations}</h2>
+              </Card.Body>
+            </Card>
+          </Col>
+          <Col md={4}>
+            <Card className="h-100 shadow-sm border-0">
+              <Card.Body>
+                <p className="text-muted text-uppercase small mb-1">Tipos</p>
+                <h2 className="fw-bold mb-0">{stats.totalTypes}</h2>
+              </Card.Body>
+            </Card>
+          </Col>
+          <Col md={4}>
+            <Card className="h-100 shadow-sm border-0">
+              <Card.Body>
+                <p className="text-muted text-uppercase small mb-1">Promedio de residentes</p>
+                <h2 className="fw-bold mb-0">{stats.avgResidents}</h2>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
 
-      <Card className="shadow-sm mb-4">
-        <Card.Body>
-          <Row className="gy-3">
-            <Col md={4}>
-              <Form.Label className="text-muted fw-semibold">Buscar</Form.Label>
-              <Form.Control
-                placeholder="Nombre, tipo o dimensión"
-                value={searchTerm}
-                onChange={(event) => setSearchTerm(event.target.value)}
-              />
-            </Col>
-            <Col md={4}>
-              <Form.Label className="text-muted fw-semibold">Filtrar por dimensión</Form.Label>
-              <Form.Select
-                value={dimensionFilter}
-                onChange={(event) => setDimensionFilter(event.target.value)}
-              >
-                <option value="all">Todas</option>
-                {dimensionOptions.map((dimension) => (
-                  <option key={dimension} value={dimension}>
-                    {dimension}
-                  </option>
-                ))}
-              </Form.Select>
-            </Col>
-            <Col md={4}>
-              <Form.Label className="text-muted fw-semibold">Filtrar por tipo</Form.Label>
-              <Form.Select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)}>
-                <option value="all">Todos</option>
-                {typeOptions.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </Form.Select>
-            </Col>
-          </Row>
-          <Row className="mt-3 gy-3 align-items-center">
-            <Col md={6}>
-              <Button variant="link" className="text-decoration-none p-0" onClick={handleResetFilters}>
+        {/* --- Filtros --- */}
+        <Card className="shadow-sm border-0 mb-4">
+          <Card.Body>
+            <Row className="gy-3 align-items-end">
+              <Col md={4}>
+                <Form.Label className="text-muted fw-semibold">Buscar ubicación</Form.Label>
+                <Form.Control
+                  placeholder="Nombre o dimensión"
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                />
+              </Col>
+              <Col md={4}>
+                <Form.Label className="text-muted fw-semibold">Tipo</Form.Label>
+                <Form.Select
+                  value={typeFilter}
+                  onChange={(e) => {
+                    setTypeFilter(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                >
+                  <option value="all">Todos</option>
+                  {typeOptions.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </Form.Select>
+              </Col>
+              <Col md={4}>
+                <Form.Label className="text-muted fw-semibold d-block">Ordenar</Form.Label>
+                <ButtonGroup className="w-100">
+                  <Button
+                    variant={sortOption === 'az' ? 'primary' : 'outline-primary'}
+                    onClick={() => setSortOption('az')}
+                  >
+                    A-Z
+                  </Button>
+                  <Button
+                    variant={sortOption === 'za' ? 'primary' : 'outline-primary'}
+                    onClick={() => setSortOption('za')}
+                  >
+                    Z-A
+                  </Button>
+                </ButtonGroup>
+              </Col>
+            </Row>
+            <div className="text-end mt-3">
+              <Button variant="link" onClick={handleResetFilters}>
                 Limpiar filtros
               </Button>
-            </Col>
-            <Col md={6} className="text-md-end">
-              <ButtonGroup>
-                <Button
-                  variant={viewMode === 'cards' ? 'primary' : 'outline-primary'}
-                  onClick={() => setViewMode('cards')}
-                >
-                  Vista tarjetas
-                </Button>
-                <Button
-                  variant={viewMode === 'table' ? 'primary' : 'outline-primary'}
-                  onClick={() => setViewMode('table')}
-                >
-                  Vista tabla
-                </Button>
-              </ButtonGroup>
-            </Col>
-          </Row>
-        </Card.Body>
-      </Card>
+            </div>
+          </Card.Body>
+        </Card>
 
-      {loading && <LoadingSpinner />}
-      {error && <ErrorAlert message={error} />}
+        {loading && <LoadingSpinner />}
+        {error && <ErrorAlert message={error} />}
 
-      {!loading && !error && (
-        <>
-          {filteredLocations.length === 0 ? (
-            <p className="text-center fs-5">No se encontraron ubicaciones con los filtros aplicados.</p>
-          ) : viewMode === 'cards' ? (
-            renderCards()
-          ) : (
-            renderTable()
-          )}
-        </>
-      )}
+        {!loading && !error && (
+          <>
+            {currentLocations.length === 0 ? (
+              <p className="text-center fs-5 text-muted">
+                No se encontraron ubicaciones con esos filtros.
+              </p>
+            ) : (
+              <>
+                <Row className="g-4">
+                  {currentLocations.map((loc) => (
+                    <Col key={loc.id} xs={12} md={6} xl={4}>
+                      <Card className="h-100 shadow-sm border-0">
+                        <Card.Body>
+                          <div className="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                              <Card.Title className="mb-1">{loc.name}</Card.Title>
+                              <Card.Subtitle className="text-muted">{loc.type}</Card.Subtitle>
+                            </div>
+                            <Badge bg="info" text="dark">
+                              {loc.dimension || 'Desconocida'}
+                            </Badge>
+                          </div>
+                          <p className="text-muted mb-2">
+                            {loc.residents.length} residentes registrados
+                          </p>
+                          <div className="text-end">
+                            <Button
+                              size="sm"
+                              variant="outline-primary"
+                              onClick={() =>
+                                setDrawerData({
+                                  title: `Residentes en ${loc.name}`,
+                                  urls: loc.residents,
+                                })
+                              }
+                            >
+                              Ver residentes
+                            </Button>
+                          </div>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  ))}
+                </Row>
 
-      <RelatedCharactersDrawer
-        title={drawerData?.title ?? ''}
-        characterUrls={drawerData?.urls ?? []}
-        show={Boolean(drawerData)}
-        onHide={() => setDrawerData(null)}
-        emptyMessage="No hay habitantes registrados en esta ubicación."
-      />
+                {/* --- Paginación --- */}
+                {totalPages > 1 && (
+                  <Pagination className="justify-content-center mt-5">
+                    {[...Array(totalPages)].map((_, i) => (
+                      <Pagination.Item
+                        key={i + 1}
+                        active={i + 1 === currentPage}
+                        onClick={() => setCurrentPage(i + 1)}
+                      >
+                        {i + 1}
+                      </Pagination.Item>
+                    ))}
+                  </Pagination>
+                )}
+              </>
+            )}
+          </>
+        )}
+
+        <RelatedCharactersDrawer
+          title={drawerData?.title ?? ''}
+          characterUrls={drawerData?.urls ?? []}
+          show={Boolean(drawerData)}
+          onHide={() => setDrawerData(null)}
+          emptyMessage="No hay residentes en esta ubicación."
+        />
+      </Container>
     </Container>
   );
 };
