@@ -55,9 +55,7 @@ const Pagination = ({ paginationInfo, onPageChange }: PaginationProps) => {
   return (
     <Row className="mt-4 align-items-center">
       <Col>
-        <p className="mb-0">
-          Página <strong>{currentPage}</strong> de <strong>{totalPages}</strong>
-        </p>
+        
       </Col>
       <Col className="d-flex justify-content-end">
         <BootstrapPagination>
