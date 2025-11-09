@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import ListPage from './pages/ListPage';
 import ContactPage from './pages/ContactPage';
+import EpisodesPage from './pages/EpisodesPage';
+import LocationsPage from './pages/LocationsPage';
 
 // Importa los componentes comunes
 import AppNavbar from './components/common/Navbar';
@@ -23,6 +25,8 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/lista" element={<ListPage />} />
           <Route path="/contacto" element={<ContactPage />} />
+          <Route path="/episodios" element={<EpisodesPage />} />
+          <Route path="/ubicaciones" element={<LocationsPage />} />
         </Routes>
       </div>
 
