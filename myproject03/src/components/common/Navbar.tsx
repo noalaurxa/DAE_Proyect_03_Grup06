@@ -17,6 +17,12 @@ const AppNavbar = () => {
             <Nav.Link as={NavLink} to="/lista">
               Listado
             </Nav.Link>
+            <Nav.Link as={NavLink} to="/episodios">
+              Episodios
+            </Nav.Link>
+            <Nav.Link as={NavLink} to="/ubicaciones">
+              Ubicaciones
+            </Nav.Link>
             <Nav.Link as={NavLink} to="/contacto">
               Contacto
             </Nav.Link>
