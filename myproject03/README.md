@@ -1,64 +1,75 @@
-# 🧪 Rick & Morty App
+# React + TypeScript + Vite
 
-Aplicación web desarrollada en **React** que consume la [Rick and Morty API](https://rickandmortyapi.com/).  
-Permite visualizar personajes, filtrarlos, navegar entre páginas y enviar mensajes de contacto mediante un formulario validado.  
-Proyecto realizado como parte de la **Tarea: Aplicación Web con React y API Pública**.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
----
+Currently, two official plugins are available:
 
-## 🚀 Tecnologías Utilizadas
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-- ⚛️ **React 18** con Hooks  
-- 🧭 **React Router DOM** — para navegación entre páginas  
-- 🌐 **Axios** — para consumir la API  
-- 💅 **React Bootstrap** — para el diseño responsive  
-- 🧰 **TypeScript** (opcional según tu configuración)  
-- 🧩 **Rick and Morty API** — fuente de datos pública  
+## React Compiler
 
----
+The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
 
-## 📁 Estructura del Proyecto
-src/
-├── components/
-│ ├── common/
-│ │ ├── Navbar.tsx
-│ │ ├── Footer.tsx
-│ │ ├── LoadingSpinner.tsx
-│ │ └── ErrorAlert.tsx
-│ ├── home/
-│ │ ├── HeroSection.tsx
-│ │ └── PopularSection.tsx
-│ ├── list/
-│ │ ├── FilterBar.tsx
-│ │ ├── EntityCard.tsx
-│ │ └── Pagination.tsx
-│ └── contact/
-│ └── ContactForm.tsx
-├── pages/
-│ ├── HomePage.tsx
-│ ├── ListPage.tsx
-│ └── ContactPage.tsx
-├── services/
-│ ├── api.ts
-│ └── entityService.ts
-├── hooks/
-│ ├── useEntities.ts
-│ └── useEntity.ts
-├── App.tsx
-└── main.tsx
+Note: This will impact Vite dev & build performances.
 
----
+## Expanding the ESLint configuration
 
-## ⚙️ Instalación y Ejecución
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
 
-1. **Clonar el repositorio**
-   ```bash
-   git clone https://github.com/noalaurxa/DAE_Proyect_03_Grup06
-   cd DAE_Proyect_03_Grup06
-   cd myproject03
-   npm install
-   npm run dev      
+```js
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
 
----
+      // Remove tseslint.configs.recommended and replace with this
+      tseslint.configs.recommendedTypeChecked,
+      // Alternatively, use this for stricter rules
+      tseslint.configs.strictTypeChecked,
+      // Optionally, add this for stylistic rules
+      tseslint.configs.stylisticTypeChecked,
 
-## ⚙️ Link de DESPLIEGUE
+      // Other configs...
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
+```
+
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+      // Enable lint rules for React
+      reactX.configs['recommended-typescript'],
+      // Enable lint rules for React DOM
+      reactDom.configs.recommended,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
+```
